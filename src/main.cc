@@ -2,42 +2,20 @@
 #include "zmake.hh"
 
 int main(int argc, char* argv[]){
+
    if (argc < 2){
-      std::cout << "Usage: zmake <command> [options]\n";
+      ZMake::log ("Usage: zmake <commands> [options]");
       return 1;
    }
 
    std::string command{argv[1]};
-
-   if(command == "run"){
-
-      ZMake::run();
-
-   } else if (command == "new"){
-
-      // failsafe, exit 
-      std::string input{argv[2]};
-      if(input == ""){
-         ZMake::log(" > Please enter a project name...");
-         return 1;
-      }
-
-      ZMake::newProject(input);
-
-   } else if (command == "build"){
-
-      ZMake::build();
-
-   } else if (command == "clean"){
-
-      ZMake::clean();
-
-   } 
-
-   else {
-      std::cout << "What? Type a real command moron.\n";
+   switch(ZMake::getCommand(command)){
+      case ZMake::Commands::BUILD: ZMake::build(); break;
+      case ZMake::Commands::CLEAN: ZMake::clean(); break;
+      case ZMake::Commands::NEW: ZMake::newProject(argv[2]); break;
+      case ZMake::Commands::RUN: ZMake::run(); break;
+      case ZMake::Commands::INVALID: ZMake::log("What? Type a real command, moron."); break;
    }
-
    //
    return 0;
 }
