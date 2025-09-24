@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.1.1)
-project(zmake VERSION 1.0.1)
+project(zmake VERSION 1.0.2)
 add_executable(zmake src/main.cc src/zmake.hh src/zmake.cc)
 
 # Fetch CPR dependancy for ZMake::getLatestCmake

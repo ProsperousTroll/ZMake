@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
 
-
-
 namespace ZMake {
    enum class Commands {
       BUILD,
@@ -22,6 +20,6 @@ namespace ZMake {
    // commands
    void build();
    void clean();
-   void newProject(std::string const& input);
+   void newProject(const char* input);
    void run();
 }

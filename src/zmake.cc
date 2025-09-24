@@ -98,12 +98,13 @@ void ZMake::clean() {
    }
 }
 
-void ZMake::newProject(std::string const& input) {
-   if(input == ""){
+void ZMake::newProject(const char* input) {
+   if(input == 0){
       log("Please type a project name!");
       return;
    }
 
+   std::string inputStr{input};
    std::filesystem::path dir{input};
    if(std::filesystem::create_directory(dir)){
       // Probably written nooblishly. Sorry.
@@ -129,11 +130,11 @@ void ZMake::newProject(std::string const& input) {
       // CMakeLists.txt template
       std::ofstream CMakeListTemplate{dir / "CMakeLists.txt"};
       CMakeListTemplate << "cmake_minimum_required(VERSION " + getLatestCmake() + ")\n";
-      CMakeListTemplate << "project(" + input + " VERSION 0.0.1)\n";
-      CMakeListTemplate << "add_executable(" + input + " src/main.cc)\n";
+      CMakeListTemplate << "project(" + inputStr + " VERSION 0.0.1)\n";
+      CMakeListTemplate << "add_executable(" + inputStr + " src/main.cc)\n";
 
       // Initialize git & gitignore
-      std::string gitCmd{"cd " + input + " && git init"};
+      std::string gitCmd{"cd " + inputStr + " && git init"};
       std::ofstream gitIgnore{dir / ".gitignore"};
       gitIgnore << "/build/";
       system(gitCmd.c_str());

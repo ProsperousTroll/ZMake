@@ -2,7 +2,6 @@
 #include "zmake.hh"
 
 int main(int argc, char* argv[]){
-
    if (argc < 2){
       ZMake::log ("Usage: zmake <commands> [options]");
       return 1;
