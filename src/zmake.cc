@@ -1,7 +1,5 @@
 #include "zmake.hh"
-#include <cstdio>
 #include <iostream>
-#include <vector>
 #include <string>
 #include <cstdlib>
 #include <fstream>
@@ -52,6 +50,12 @@ bool ZMake::isZmake() {
    std::ifstream _id_z(".id.z");
    if(!_id_z){
       log(" > ERROR! Not currently in a ZMake project. Did you run 'zmake new'?");
+      return false;
+   }
+   std::string project;
+   _id_z >> project;
+   if (project == ""){
+      log(" > ERROR! Project token empty. Did you run 'zmake new'?");
       return false;
    }
    return true;
@@ -138,14 +142,12 @@ void ZMake::newProject(const char* input) {
       std::ofstream gitIgnore{dir / ".gitignore"};
       gitIgnore << "/build/";
       system(gitCmd.c_str());
-      // system("cd ..");
 
    } else {
       // exit if dir already exists
       log (" > ERROR! Failed to create project directory... Does it already exist?");
       return;
    }
-
 }
 
 void ZMake::run() {
