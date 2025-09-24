@@ -51,7 +51,7 @@ void ZMake::log(std::string const& input){
 bool ZMake::isZmake() {
    std::ifstream _id_z(".id.z");
    if(!_id_z){
-      ZMake::log(" > ERROR! Not currently in a ZMake project. Did you run 'zmake new'?");
+      log(" > ERROR! Not currently in a ZMake project. Did you run 'zmake new'?");
       return false;
    }
    return true;
@@ -73,7 +73,16 @@ std::string ZMake::getLatestCmake(){
 
 void ZMake::build() {
    if(isZmake()){
+      std::filesystem::path project{getCurrentDir()};
+      std::filesystem::path build{ project / "build"};
       log(" > Building...");
+
+      if(!std::filesystem::create_directory(build)){
+         log(" > Build folder already exists... rebuilding");
+      } 
+
+      std::string cmdBuild{"cmake -S " + getCurrentDir() + " -B " + getCurrentDir() + "/build && cd build && make"};
+      system(cmdBuild.c_str());
       return;
    }
 }
@@ -81,11 +90,15 @@ void ZMake::build() {
 void ZMake::clean() {
    if(isZmake()){
       log(" > Cleaning...");
+      std::filesystem::path build{getCurrentDir() + "/build"};
+      if(!std::filesystem::remove_all(build)){
+         log(" > Nothing to clean!");
+      }
+      log(" > All clean!");
    }
 }
 
 void ZMake::newProject(std::string const& input) {
-
    if(input == ""){
       log("Please type a project name!");
       return;
@@ -115,7 +128,7 @@ void ZMake::newProject(std::string const& input) {
       
       // CMakeLists.txt template
       std::ofstream CMakeListTemplate{dir / "CMakeLists.txt"};
-      CMakeListTemplate << "cmake-minimum-required(VERSION " + getLatestCmake() + ")\n";
+      CMakeListTemplate << "cmake_minimum_required(VERSION " + getLatestCmake() + ")\n";
       CMakeListTemplate << "project(" + input + " VERSION 0.0.1)\n";
       CMakeListTemplate << "add_executable(" + input + " src/main.cc)\n";
 
@@ -135,5 +148,15 @@ void ZMake::newProject(std::string const& input) {
 }
 
 void ZMake::run() {
-   log(" > Running...");
+   if(isZmake()){
+      log(" > Running...");
+      // get project name
+      std::ifstream _id_z{".id.z"};
+      std::string project;
+      _id_z >> project;
+
+      build();
+      std::string runCmd{"cd build && ./" + project};
+      system(runCmd.c_str());
+   }
 }
