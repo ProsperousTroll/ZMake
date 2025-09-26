@@ -8,7 +8,7 @@
 #include <cpr/cpr.h>
 #include <regex>
 
-// ------------------ vars ------------------- //
+// ------------------ vars / misc ------------------- //
 
 std::string tempMain[8]{
    "#include <iostream>\n",
@@ -20,6 +20,27 @@ std::string tempMain[8]{
    "    return 0;\n",
    "}",
 };
+
+// i'm actually so sorry.
+void mesonBuildTemplate(std::ofstream& input, std::string const& name){
+   input << "project(\n";
+   input << "  '" + name + "',\n";
+   input << "  'cpp',\n";
+   input << "  default_options:['default_library=static']\n";
+   input << ")\n";
+   input << "\n";
+   input << "inc = include_directories('include')\n";
+   input << "# you can add dependencies by installing them with 'meson wrap install (package name)'\n";
+   input << "# then listing them as variables, like 'ex_dep = dependency(example)'\n";
+   input << "\n";
+   input << "executable(\n";
+   input << "  '" + name + "',\n";
+   input << "  ['src/main.cc'], # source files go here\n";
+   input << "  include_directories: inc,\n";
+   input << "  dependencies: [] # dependencies go here\n";
+   input << ")\n";
+}
+
 
 // ----------------- helpers ----------------- //
 
@@ -83,9 +104,14 @@ void ZMake::build() {
 
       if(!std::filesystem::create_directory(build)){
          log(" > Build folder already exists... rebuilding");
+         std::string cmdBuild{"meson setup build --reconfigure && cd build && meson compile"};
+         system(cmdBuild.c_str());
+         return;
       } 
 
-      std::string cmdBuild{"cmake -S " + getCurrentDir() + " -B " + getCurrentDir() + "/build && cd build && make"};
+      // goodbye cmake. I will not miss you that much.
+      // std::string cmdBuild{"cmake -S " + getCurrentDir() + " -B " + getCurrentDir() + "/build && cd build && make"};
+      std::string cmdBuild{"meson setup build && cd build && meson compile"};
       system(cmdBuild.c_str());
       return;
    }
@@ -121,9 +147,9 @@ void ZMake::newProject(const char* input) {
 
       // build directory tree
       std::filesystem::path src{"src"};
-      std::filesystem::path build{"build"};
+      std::filesystem::path include{"include"};
       std::filesystem::create_directory(dir / src);
-      std::filesystem::create_directory(dir / build);
+      std::filesystem::create_directory(dir / include);
       std::ofstream scriptTemplate{dir / src/ "main.cc"};
 
       // see std::string tempMain
@@ -132,10 +158,8 @@ void ZMake::newProject(const char* input) {
       }
       
       // CMakeLists.txt template
-      std::ofstream CMakeListTemplate{dir / "CMakeLists.txt"};
-      CMakeListTemplate << "cmake_minimum_required(VERSION " + getLatestCmake() + ")\n";
-      CMakeListTemplate << "project(" + inputStr + " VERSION 0.0.1)\n";
-      CMakeListTemplate << "add_executable(" + inputStr + " src/main.cc)\n";
+      std::ofstream tempMeson{dir / "meson.build"};
+      mesonBuildTemplate(tempMeson, input);
 
       // Initialize git & gitignore
       std::string gitCmd{"cd " + inputStr + " && git init"};
